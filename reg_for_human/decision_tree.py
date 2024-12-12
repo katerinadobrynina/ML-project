@@ -36,11 +36,9 @@ class DecisionTreeRegressor:
         feat_ids = np.random.choice(num_features, self.num_features, replace = False)
         best_feat, best_threshold = self.best_split(X,y, feat_ids)
 
-        best_gain = 0.0
-        best_criteria = None
-        best_sets = None
-
-        feature_indices = list(range(num_features))
+        left_ids, right_ids = self.split(X[:, best_feat], best_threshold)
+        left_subtree = self.build_tree(X[left_ids, :], y[left_ids], depth + 1)
+        right_subtree = self.build_tree(X[right_ids, :], y[right_ids], depth + 1)
 
 
     def best_split(self, X, y, feat_ids):

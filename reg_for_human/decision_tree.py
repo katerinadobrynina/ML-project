@@ -31,7 +31,7 @@ class DecisionTreeRegressor:
     def build_tree(self, X, y, depth = 0):
         num_samples, num_features = X.shape
         if(depth >= self.max_depth or len(np.unique(y)) == 1 or num_samples < self.min_samples_split):
-            leaf_val = self.most_comm_lab(y)
+            leaf_val = np.mean(y)
             return Node(var_red=leaf_val)
         feat_ids = np.random.choice(num_features, self.num_features, replace = False)
         best_feat, best_threshold = self.best_split(X,y, feat_ids)
@@ -49,27 +49,23 @@ class DecisionTreeRegressor:
         for feat_id in feat_ids:
             X_col = X[:, feat_id]
             thresholds = np.unique(X_col)
-
             for thr in thresholds:
-                gain = self.inf_gain(y,X_col,thr)
-
+                left_ids, right_ids = self.split(X_col, thr)
+                if len(left_ids) == 0 or len(right_ids) == 0:
+                    continue
+                gain = self.variance_reduction(y,y[left_ids],y[right_ids])
                 if gain > best_gain:
                     best_gain = gain
                     split_idx = feat_id
                     split_thes = thr
         return split_idx, split_thes
 
-
-    def inf_gain(self,y, X_col, threshold) -> np.float64:
-        parent_entropy = self.entropy(y)
-        ledf_idx, right_idx = self.split(X_col, threshold)
-        if len(ledf_idx) == 0 or len(right_idx) == 0:
-            return 0
-
-        n = len(y)
-        n_l, n_r = len(ledf_idx), len(right_idx)
-        e_l, e_r = self.entropy(y[ledf_idx]), self.entropy(y[right_idx])
-        return parent_entropy - (n_l/n)*e_l - (n_r/n)*e_r
+    def variance_reduction(self, y, left_y, right_y) -> float:
+        parent_var = np.var(y)
+        n = len (y)
+        n_l = len(left_y)
+        n_r = len(right_y)
+        return parent_var - (n_l / n) * np.var(left_y) + (n_r / n) * np.var(right_y)
 
 
     def split(self, X_col, threshold) -> tuple:
@@ -77,23 +73,43 @@ class DecisionTreeRegressor:
         right_idx = np.argwhere(X_col > threshold).flatten()
         return left_idx, right_idx
 
-
-    def entropy(self, y) -> np.float64:
-        return -np.sum([p * np.log2(p) for p in np.bincount(y)/len(y) if p > 0])
-
-
-    def most_comm_lab(self, y):
-        counter = Counter(y)
-        return  counter.most_common(1)[0][0]
-
     def predict(self, X):
         return np.array([self.traverse_tree(x, self.root) for x in X])
 
     def traverse_tree(self, x, node):
-        if node.value is not None:
-            return node.value
+        if node.var_red is not None:
+            return node.var_red
         else:
             if x[node.feature_index] <= node.threshold:
                 return self.traverse_tree(x, node.left)
             else:
                 return self.traverse_tree(x, node.right)
+
+
+
+from sklearn import datasets
+from sklearn.model_selection import train_test_split
+from reg_for_human.decision_tree import DecisionTreeRegressor
+
+
+def train():
+    data = datasets.load_breast_cancer()
+    X, y = data.data, data.target
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    clf = DecisionTreeRegressor()
+    clf.fit(X_train, y_train)
+    pred = clf.predict(X_test)
+    acc = accuracy (y_test, pred)
+    print (acc)
+
+def accuracy(y_true, y_pred):
+    return np.sum(y_true == y_pred) / len(y_true)
+
+
+def main():
+    train()
+
+if __name__ == "__main__":
+    main()
+
+

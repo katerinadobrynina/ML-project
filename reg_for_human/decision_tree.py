@@ -46,7 +46,7 @@ class DecisionTreeRegressor:
     def best_split(self, X, y, feat_ids):
         best_gain = -1
         slit_idx, split_thes = None, None
-        for feat_id, in feat_ids:
+        for feat_id in feat_ids:
             X_col = X[:, feat_id]
             thresholds = np.unique(X_col)
 

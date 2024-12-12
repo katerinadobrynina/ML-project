@@ -28,14 +28,16 @@ class DecisionTreeRegressor:
         self.root = self.build_tree(X, y)
 
 
-    def build_tree(self, X, y, depth = 0):
+    def build_tree(self, X, y, depth = 0) -> Node:
         num_samples, num_features = X.shape
         if(depth >= self.max_depth or len(np.unique(y)) == 1 or num_samples < self.min_samples_split):
             leaf_val = np.mean(y)
             return Node(var_red=leaf_val)
         feat_ids = np.random.choice(num_features, self.num_features, replace = False)
         best_feat, best_threshold = self.best_split(X,y, feat_ids)
-
+        if best_feat is None or best_threshold is None:
+            leaf_val = np.mean(y)
+            return Node(var_red=leaf_val)
         left_ids, right_ids = self.split(X[:, best_feat], best_threshold)
         left_subtree = self.build_tree(X[left_ids, :], y[left_ids], depth + 1)
         right_subtree = self.build_tree(X[right_ids, :], y[right_ids], depth + 1)
@@ -43,7 +45,7 @@ class DecisionTreeRegressor:
 
 
 
-    def best_split(self, X, y, feat_ids):
+    def best_split(self, X, y, feat_ids) -> tuple:
         best_gain = -1
         split_idx, split_thes = None, None
         for feat_id in feat_ids:
@@ -73,10 +75,10 @@ class DecisionTreeRegressor:
         right_idx = np.argwhere(X_col > threshold).flatten()
         return left_idx, right_idx
 
-    def predict(self, X):
+    def predict(self, X) -> np.array:
         return np.array([self.traverse_tree(x, self.root) for x in X])
 
-    def traverse_tree(self, x, node):
+    def traverse_tree(self, x, node) -> float:
         if node.var_red is not None:
             return node.var_red
         else:
@@ -86,6 +88,10 @@ class DecisionTreeRegressor:
                 return self.traverse_tree(x, node.right)
 
 
+
+"""
+This is basic test section, which tests on the sklearn preprocessed dataset and can be removed later.
+"""
 
 from sklearn import datasets
 from sklearn.model_selection import train_test_split

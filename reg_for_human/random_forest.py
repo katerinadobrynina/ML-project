@@ -1,5 +1,6 @@
 import numpy as np
 from decision_tree import DecisionTreeRegressor
+import pandas as pd
 
 class RandomForestRegressor:
     def __init__(self, num_trees = 5, max_depth = 10, min_samples_split = 2, min_samples_leaf = 1, num_features = None):
@@ -12,6 +13,14 @@ class RandomForestRegressor:
 
     def fit(self, X, y):
         self.trees = []
+        if isinstance(X, pd.DataFrame):
+            X = X.values
+        else:
+            X = np.array(X)  # Ensures X is a NumPy array
+        if isinstance(y, pd.Series):
+            y = y.values
+        else:
+            y = np.array(y)  # Ensures y is a NumPy array
         for i in range(self.num_trees):
             tree = DecisionTreeRegressor(max_depth = self.max_depth, min_samples_split = self.min_samples_split,
                                          min_samples_leaf = self.min_samples_leaf, num_features = self.num_features)
@@ -26,6 +35,10 @@ class RandomForestRegressor:
 
 
     def predict(self, X):
+        if isinstance (X, pd.DataFrame):
+            X = X.values
+        else:
+            X = np.array (X)  # Ensures X is a NumPy array
         predictions = np.array([tree.predict (X) for tree in self.trees])
         tree_preds = np.mean(predictions, axis=0)
         return tree_preds

@@ -45,7 +45,7 @@ class DecisionTreeRegressor:
 
     def best_split(self, X, y, feat_ids):
         best_gain = -1
-        slit_idx, split_thes = None, None
+        split_idx, split_thes = None, None
         for feat_id in feat_ids:
             X_col = X[:, feat_id]
             thresholds = np.unique(X_col)
@@ -65,7 +65,7 @@ class DecisionTreeRegressor:
         n = len (y)
         n_l = len(left_y)
         n_r = len(right_y)
-        return parent_var - (n_l / n) * np.var(left_y) + (n_r / n) * np.var(right_y)
+        return parent_var - (n_l / n) * np.var(left_y) - (n_r / n) * np.var(right_y)
 
 
     def split(self, X_col, threshold) -> tuple:
@@ -93,17 +93,17 @@ from reg_for_human.decision_tree import DecisionTreeRegressor
 
 
 def train():
-    data = datasets.load_breast_cancer()
+    data = datasets.load_diabetes()
     X, y = data.data, data.target
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     clf = DecisionTreeRegressor()
     clf.fit(X_train, y_train)
     pred = clf.predict(X_test)
-    acc = accuracy (y_test, pred)
+    acc = mse(y_test, pred)
     print (acc)
 
-def accuracy(y_true, y_pred):
-    return np.sum(y_true == y_pred) / len(y_true)
+def mse(y_true, y_pred):
+    return np.mean((y_true - y_pred)**2)
 
 
 def main():

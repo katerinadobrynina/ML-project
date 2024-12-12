@@ -39,6 +39,8 @@ class DecisionTreeRegressor:
         left_ids, right_ids = self.split(X[:, best_feat], best_threshold)
         left_subtree = self.build_tree(X[left_ids, :], y[left_ids], depth + 1)
         right_subtree = self.build_tree(X[right_ids, :], y[right_ids], depth + 1)
+        return Node(best_feat, best_threshold, left_subtree, right_subtree)
+
 
 
     def best_split(self, X, y, feat_ids):
@@ -83,3 +85,15 @@ class DecisionTreeRegressor:
     def most_comm_lab(self, y):
         counter = Counter(y)
         return  counter.most_common(1)[0][0]
+
+    def predict(self, X):
+        return np.array([self.traverse_tree(x, self.root) for x in X])
+
+    def traverse_tree(self, x, node):
+        if node.value is not None:
+            return node.value
+        else:
+            if x[node.feature_index] <= node.threshold:
+                return self.traverse_tree(x, node.left)
+            else:
+                return self.traverse_tree(x, node.right)

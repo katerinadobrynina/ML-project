@@ -1,17 +1,12 @@
 import numpy as np
-import pandas as pd
-from collections import Counter
-
 
 class Node:
-    def __init__(self, feature_index = None, threshold = None, left = None, right = None, var_red = None, var_imp = None):
+    def __init__(self, feature_index = None, threshold = None, left = None, right = None, var_red = None):
         self.feature_index = feature_index
         self.threshold = threshold
         self.left = left
         self.right = right
         self.var_red = var_red
-        self.var_imp = var_imp
-
 
 
 class DecisionTreeRegressor:
@@ -30,7 +25,7 @@ class DecisionTreeRegressor:
 
     def build_tree(self, X, y, depth = 0) -> Node:
         num_samples, num_features = X.shape
-        if(depth >= self.max_depth or len(np.unique(y)) == 1 or num_samples < self.min_samples_split):
+        if depth >= self.max_depth or len(np.unique(y)) == 1 or num_samples < self.min_samples_split:
             leaf_val = np.mean(y)
             return Node(var_red=leaf_val)
         feat_ids = np.random.choice(num_features, self.num_features, replace = False)
@@ -62,7 +57,8 @@ class DecisionTreeRegressor:
                     split_thes = thr
         return split_idx, split_thes
 
-    def variance_reduction(self, y, left_y, right_y) -> float:
+    @staticmethod
+    def variance_reduction(y, left_y, right_y) -> float:
         parent_var = np.var(y)
         n = len (y)
         n_l = len(left_y)
@@ -70,7 +66,8 @@ class DecisionTreeRegressor:
         return parent_var - (n_l / n) * np.var(left_y) - (n_r / n) * np.var(right_y)
 
 
-    def split(self, X_col, threshold) -> tuple:
+    @staticmethod
+    def split(X_col, threshold) -> tuple:
         left_idx = np.argwhere(X_col <= threshold).flatten()
         right_idx = np.argwhere(X_col > threshold).flatten()
         return left_idx, right_idx
@@ -87,35 +84,5 @@ class DecisionTreeRegressor:
             else:
                 return self.traverse_tree(x, node.right)
 
-
-
-"""
-This is basic test section, which tests on the sklearn preprocessed dataset and can be removed later.
-"""
-
-from sklearn import datasets
-from sklearn.model_selection import train_test_split
-from reg_for_human.decision_tree import DecisionTreeRegressor
-
-
-def train():
-    data = datasets.load_diabetes()
-    X, y = data.data, data.target
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    clf = DecisionTreeRegressor()
-    clf.fit(X_train, y_train)
-    pred = clf.predict(X_test)
-    acc = mse(y_test, pred)
-    print (acc)
-
-def mse(y_true, y_pred):
-    return np.mean((y_true - y_pred)**2)
-
-
-def main():
-    train()
-
-if __name__ == "__main__":
-    main()
 
 

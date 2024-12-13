@@ -16,11 +16,11 @@ class RandomForestRegressor:
         if isinstance(X, pd.DataFrame):
             X = X.values
         else:
-            X = np.array(X)  # Ensures X is a NumPy array
+            X = np.array(X)
         if isinstance(y, pd.Series):
             y = y.values
         else:
-            y = np.array(y)  # Ensures y is a NumPy array
+            y = np.array(y)
         for i in range(self.num_trees):
             tree = DecisionTreeRegressor(max_depth = self.max_depth, min_samples_split = self.min_samples_split,
                                          min_samples_leaf = self.min_samples_leaf, num_features = self.num_features)
@@ -28,7 +28,8 @@ class RandomForestRegressor:
             tree.fit(X_sample, y_sample)
             self.trees.append(tree)
             
-    def bootstrap(self, X, y):
+    @staticmethod
+    def bootstrap(X, y):
         num_sampls = X.shape[0]
         idxs = np.random.choice(num_sampls, num_sampls, replace = True)
         return X[idxs], y[idxs]
@@ -42,38 +43,3 @@ class RandomForestRegressor:
         predictions = np.array([tree.predict (X) for tree in self.trees])
         tree_preds = np.mean(predictions, axis=0)
         return tree_preds
-
-
-from random import random
-from sklearn import datasets
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
-from sklearn.ensemble import RandomForestRegressor as SklearnRandomForestRegressor
-
-def mse(y_true, y_pred):
-    return np.mean((y_true - y_pred)**2)
-
-def train():
-    data = datasets.load_diabetes()
-    X, y = data.data, data.target
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    # Train and evaluate custom RandomForest
-    custom_clf = RandomForestRegressor(num_trees=10, max_depth=10)
-    custom_clf.fit(X_train, y_train)
-    custom_pred = custom_clf.predict(X_test)
-    custom_mse_value = mse(y_test, custom_pred)
-    print("Custom RandomForest MSE:", custom_mse_value)
-
-    # Train and evaluate sklearn RandomForest
-    sklearn_clf = SklearnRandomForestRegressor(n_estimators=10, max_depth=10, random_state=42)
-    sklearn_clf.fit(X_train, y_train)
-    sklearn_pred = sklearn_clf.predict(X_test)
-    sklearn_mse_value = mean_squared_error(y_test, sklearn_pred)
-    print("Sklearn RandomForest MSE:", sklearn_mse_value)
-
-def main():
-    train()
-
-if __name__ == "__main__":
-    main()

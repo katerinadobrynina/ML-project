@@ -39,7 +39,7 @@ class RandomForestRegressor:
         if isinstance (X, pd.DataFrame):
             X = X.values
         else:
-            X = np.array (X)  # Ensures X is a NumPy array
+            X = np.array (X)
         predictions = np.array([tree.predict (X) for tree in self.trees])
         tree_preds = np.mean(predictions, axis=0)
         return tree_preds

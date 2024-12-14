@@ -1,8 +1,9 @@
 import numpy as np
 from decision_tree import DecisionTreeRegressor
+from sklearn.base import BaseEstimator, RegressorMixin
 import pandas as pd
 
-class RandomForestRegressor:
+class RandomForestRegressor(BaseEstimator, RegressorMixin):
     def __init__(self, num_trees = 5, max_depth = 10, min_samples_split = 2, min_samples_leaf = 1, num_features = None):
         self.num_trees = num_trees
         self.max_depth = max_depth

@@ -1,6 +1,16 @@
 import cupy as cp
 from joblib import Parallel, delayed
 
+
+class Node:
+    def __init__(self, feature_index=None, threshold=None, left=None, right=None, var_red=None):
+        self.feature_index = feature_index  # Index of the feature to split on
+        self.threshold = threshold          # Threshold value for the split
+        self.left = left                   # Left subtree
+        self.right = right                 # Right subtree
+        self.var_red = var_red             # For leaf nodes, store the prediction value
+
+        
 class DecisionTreeRegressor:
     def __init__(self, max_depth=10, min_samples_split=2, min_samples_leaf=1, num_features=None):
         self.max_depth = max_depth
